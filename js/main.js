@@ -1,8 +1,12 @@
+
 const video = document.querySelector(".player");
 const canvas = document.querySelector(".photo");
 const ctx = canvas.getContext("2d");
 const strip = document.querySelector(".strip");
 const snap = document.querySelector(".snap");
+const photo = document.querySelector(".takePhoto");
+const redColor = document.querySelector(".redChange");
+const rgbEffect = document.querySelector(".rgbChange");
 
 const getVideo = () => {
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
@@ -15,21 +19,60 @@ const getVideo = () => {
         });
 };
 
+
 function paintToCanvas() {
     const width = video.videoWidth;
     const height = video.videoHeight;
     canvas.width = width;
     canvas.height = height;
-
-    return setInterval(() => {
-        ctx.drawImage(video, 0, 0, width, height);
-        let pixels = ctx.getImageData(0, 0, width, height);
-        // pixels = redEffect(pixels);
-        // pixels = rgbSplit(pixels);
-        pixels = greenScreen(pixels);
-        ctx.putImageData(pixels, 0, 0);
-    }, 16);
 }
+const noEffects = () => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
+    let pixels = ctx.getImageData(0, 0, width, height);
+    pixels = greenScreen(pixels);
+    ctx.putImageData(pixels, 0, 0);
+}
+const redEffects = () => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
+    let pixels = ctx.getImageData(0, 0, width, height);
+    pixels = redEffect(pixels);
+    ctx.putImageData(pixels, 0, 0);
+}
+const rgbEffects = () => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
+    let pixels = ctx.getImageData(0, 0, width, height);
+    pixels = rgbSplit(pixels);
+    ctx.putImageData(pixels, 0, 0);
+}
+
+const defaultEffect = setInterval(noEffects, 16);
+
+let redBackground;
+let ghostEffect;
+
+function changeOnRed() {
+    redBackground = setInterval(redEffects, 16);
+    clearInterval(defaultEffect);
+    clearInterval(ghostEffect);
+};
+function changeOnGhost() {
+    ghostEffect = setInterval(rgbEffects, 16);
+    clearInterval(defaultEffect);
+    clearInterval(redBackground);
+};
+
 
 function takePhoto() {
     snap.currentTime = 0;
@@ -85,8 +128,25 @@ function greenScreen(pixels) {
 
     return pixels;
 }
+function rgbChange() {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const rgbEffects = () => {
+        ctx.drawImage(video, 0, 0, width, height);
+        let pixels = ctx.getImageData(0, 0, width, height);
+        pixels = rgbSplit(pixels);
+        ctx.putImageData(pixels, 0, 0);
+    }
+
+    return setInterval(rgbEffects, 16);
+}
 
 
 getVideo();
-
+photo.addEventListener("click", takePhoto);
 video.addEventListener("canplay", paintToCanvas);
+redColor.addEventListener("click", changeOnRed);
+rgbEffect.addEventListener("click", changeOnGhost);
